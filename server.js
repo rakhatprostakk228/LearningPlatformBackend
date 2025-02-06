@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: "https://learningplatformfrontend.onrender.com",
-    credentials: true
+    origin: "*",
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
 app.use(express.json({ limit: '10mb' }));
