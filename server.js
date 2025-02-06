@@ -11,11 +11,12 @@ const courseRoutes = require("./routes/courses");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(cors({
-    origin: 'https://learningplatformfrontend.onrender.com',
+    origin: "*",
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 
 app.use(express.json({ limit: '10mb' }));
