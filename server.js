@@ -13,7 +13,8 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors({
     origin: "https://learningplatformfrontend.onrender.com",
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
 app.use(express.json({ limit: '10mb' }));
