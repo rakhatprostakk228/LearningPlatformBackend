@@ -11,12 +11,6 @@ const courseRoutes = require("./routes/courses");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server is running on port ${port}`);
-    console.log('Environment:', process.env.NODE_ENV);
-    console.log('Time:', new Date().toISOString());
-  });
-
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'https://learningplatformfrontend.onrender.com',
     credentials: true,
@@ -100,8 +94,8 @@ const startServer = async () => {
         }
 
         // Start Server
-        const server = app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
+        const server = app.listen(PORT, '0.0.0.0', () => {
+            console.log(`Server is running on port ${PORT}`);
             console.log('Environment:', process.env.NODE_ENV);
             console.log('Time:', new Date().toISOString());
         });
