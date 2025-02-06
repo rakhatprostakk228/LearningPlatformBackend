@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: "https://learningplatformfrontend.onrender.com",
     credentials: true
 }));
 
