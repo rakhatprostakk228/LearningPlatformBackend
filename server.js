@@ -12,11 +12,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: "https://learningplatformfrontend.onrender.com",
-    credentials: true,
+    origin: "*",
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept', 'X-Requested-With'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range']
+    allowedHeaders: '*',
 }));
 
 app.use(express.json({ limit: '10mb' }));
