@@ -84,6 +84,17 @@ const startServer = async () => {
         await connectDB();
         console.log('MongoDB Connected successfully');
 
+        app.use((req, res, next) => {
+            if (!mongoose.connection.readyState) {
+                return res.status(503).json({ 
+                    status: 'error',
+                    code: 'DB_NOT_CONNECTED',
+                    message: 'База данных не подключена'
+                });
+            }
+            next();
+        });
+
         // Verify Email Configuration
         const emailConfigured = await verifyEmailConfig();
         if (!emailConfigured) {

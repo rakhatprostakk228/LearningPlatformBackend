@@ -155,7 +155,16 @@ const courseSchema = new mongoose.Schema({
     lessons: [lessonSchema],
     enrolledStudents: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        paymentStatus: {
+            type: String,
+            enum: ['pending', 'completed'],
+            default: 'pending'
+        },
+        enrolledAt: {
+            type: Date,
+            default: Date.now
+        }
     }]
 }, {
     timestamps: true
