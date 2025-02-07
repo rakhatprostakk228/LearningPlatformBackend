@@ -233,25 +233,28 @@ router.post('/:courseId/payment', auth, async (req, res) => {
             return res.status(404).json({ message: 'Курс не найден' });
         }
 
-        // Обновляем статус оплаты
+        // Находим студента в массиве enrolledStudents
         const studentIndex = course.enrolledStudents.findIndex(
-            student => student.toString() === req.user.id
+            enrollment => enrollment.student && enrollment.student.toString() === req.user.id
         );
 
         if (studentIndex === -1) {
+            // Если студент еще не записан на курс
             course.enrolledStudents.push({
                 student: req.user.id,
-                paymentStatus: 'completed'
+                paymentStatus: 'completed',
+                enrolledAt: new Date()
             });
         } else {
+            // Обновляем статус оплаты для существующей записи
             course.enrolledStudents[studentIndex].paymentStatus = 'completed';
         }
 
         await course.save();
         res.json({ message: 'Оплата прошла успешно' });
     } catch (err) {
-        console.error('Error processing payment:', err);
-        res.status(500).json({ message: 'Ошибка при обработке оплаты' });
+        console.error('Ошибка при обработке платежа:', err);
+        res.status(500).json({ message: 'Ошибка при обработке платежа' });
     }
 });
 

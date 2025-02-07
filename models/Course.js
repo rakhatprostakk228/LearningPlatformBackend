@@ -122,6 +122,23 @@ const lessonSchema = new mongoose.Schema({
     }
 });
 
+const enrolledStudentSchema = new mongoose.Schema({
+    student: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'completed'],
+        default: 'pending'
+    },
+    enrolledAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
 const courseSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -153,19 +170,7 @@ const courseSchema = new mongoose.Schema({
         default: 'default-course-image.jpg'
     },
     lessons: [lessonSchema],
-    enrolledStudents: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        paymentStatus: {
-            type: String,
-            enum: ['pending', 'completed'],
-            default: 'pending'
-        },
-        enrolledAt: {
-            type: Date,
-            default: Date.now
-        }
-    }]
+    enrolledStudents: [enrolledStudentSchema]
 }, {
     timestamps: true
 });
