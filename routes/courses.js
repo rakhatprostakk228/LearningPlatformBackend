@@ -226,6 +226,35 @@ router.post('/lessons/:lessonId/quiz-progress', auth, async (req, res) => {
     }
 });
 
+router.post('/:courseId/payment', auth, async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Курс не найден' });
+        }
+
+        // Обновляем статус оплаты
+        const studentIndex = course.enrolledStudents.findIndex(
+            student => student.toString() === req.user.id
+        );
+
+        if (studentIndex === -1) {
+            course.enrolledStudents.push({
+                student: req.user.id,
+                paymentStatus: 'completed'
+            });
+        } else {
+            course.enrolledStudents[studentIndex].paymentStatus = 'completed';
+        }
+
+        await course.save();
+        res.json({ message: 'Оплата прошла успешно' });
+    } catch (err) {
+        console.error('Error processing payment:', err);
+        res.status(500).json({ message: 'Ошибка при обработке оплаты' });
+    }
+});
+
 // Submit final quiz answers
 // Добавьте этот маршрут в courses.js
 router.post('/lessons/:lessonId/submit-quiz', auth, async (req, res) => {
