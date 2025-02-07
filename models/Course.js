@@ -1,7 +1,5 @@
-// backend/models/Course.js
 const mongoose = require('mongoose');
 
-// Схема для отслеживания прогресса видео
 const videoProgressSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -19,31 +17,6 @@ const videoProgressSchema = new mongoose.Schema({
     lastPosition: {
         type: Number,
         default: 0
-    }
-});
-
-// Схема для ответов на квиз
-const quizAnswerSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    answers: [{
-        questionId: Number,
-        selectedAnswer: Number
-    }],
-    score: {
-        type: Number,
-        default: 0
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    },
-    attemptDate: {
-        type: Date,
-        default: Date.now
     }
 });
 
@@ -66,19 +39,22 @@ const questionSchema = new mongoose.Schema({
     }
 });
 
-const quizSchema = new mongoose.Schema({
-    title: {
-        type: String,
+const quizAttemptSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true
     },
-    description: String,
-    questions: [questionSchema],
-    timeLimit: Number,
-    minPassingScore: {
-        type: Number,
-        default: 70
-    },
-    attempts: [quizAnswerSchema]
+    answers: [{
+        questionId: Number,
+        selectedAnswer: Number
+    }],
+    score: Number,
+    passed: Boolean,
+    attemptDate: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 const lessonSchema = new mongoose.Schema({
@@ -89,28 +65,12 @@ const lessonSchema = new mongoose.Schema({
     description: String,
     videoUrl: String,
     videoProgress: [videoProgressSchema],
-    duration: Number, // длительность видео в секундах
+    duration: Number,
     content: String,
     quiz: {
         title: String,
         questions: [questionSchema],
-        attempts: [{
-            userId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User',
-                required: true
-            },
-            answers: [{
-                questionId: Number,
-                selectedAnswer: Number
-            }],
-            score: Number,
-            passed: Boolean,
-            attemptDate: {
-                type: Date,
-                default: Date.now
-            }
-        }],
+        attempts: [quizAttemptSchema],
         completed: {
             type: Boolean,
             default: false
@@ -174,64 +134,6 @@ const courseSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-
-// Методы для работы с видео
-courseSchema.methods.updateVideoProgress = async function(lessonId, userId, progress) {
-    const lesson = this.lessons.id(lessonId);
-    if (!lesson) return null;
-
-    const videoProgress = lesson.videoProgress.find(
-        p => p.userId.toString() === userId.toString()
-    );
-
-    if (videoProgress) {
-        videoProgress.watchedDuration = progress.watchedDuration;
-        videoProgress.lastPosition = progress.lastPosition;
-        videoProgress.completed = progress.completed;
-    } else {
-        lesson.videoProgress.push({
-            userId,
-            ...progress
-        });
-    }
-
-    await this.save();
-    return lesson;
-};
-
-// Методы для работы с квизами
-courseSchema.methods.submitQuizAnswers = async function(lessonId, userId, answers) {
-    const lesson = this.lessons.id(lessonId);
-    if (!lesson || !lesson.quiz) return null;
-
-    const score = calculateQuizScore(lesson.quiz.questions, answers);
-    
-    lesson.quiz.attempts.push({
-        userId,
-        answers,
-        score,
-        completed: true
-    });
-
-    await this.save();
-    return {
-        score,
-        passed: score >= lesson.quiz.minPassingScore
-    };
-};
-
-function calculateQuizScore(questions, answers) {
-    let correctAnswers = 0;
-    
-    answers.forEach(answer => {
-        const question = questions.find(q => q.questionId === answer.questionId);
-        if (question && question.correctAnswer === answer.selectedAnswer) {
-            correctAnswers++;
-        }
-    });
-
-    return (correctAnswers / questions.length) * 100;
-}
 
 const Course = mongoose.model('Course', courseSchema);
 
