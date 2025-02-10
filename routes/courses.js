@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Course = require('../models/Course');
 const auth = require('../middleware/auth');
+const User = require('../models/User');
 
 // Get all courses (public route)
 router.get('/', async (req, res) => {
@@ -231,13 +232,10 @@ router.post('/:courseId/payment', auth, async (req, res) => {
         const user = await User.findById(req.user.id);
         const course = await Course.findById(req.params.courseId);
         
-        if (!course) {
-            return res.status(404).json({ message: 'Курс не найден' });
-        }
+        if (!course) return res.status(404).json({ message: 'Курс не найден' });
 
-        // Проверяем, есть ли уже этот курс у пользователя
         const existingEnrollment = user.enrolledCourses.find(
-            enrollment => enrollment.course.toString() === req.params.courseId
+            e => e.course.toString() === req.params.courseId
         );
 
         if (existingEnrollment) {
@@ -252,7 +250,6 @@ router.post('/:courseId/payment', auth, async (req, res) => {
         await user.save();
         res.json({ message: 'Оплата прошла успешно' });
     } catch (err) {
-        console.error('Ошибка при обработке платежа:', err);
         res.status(500).json({ message: 'Ошибка при обработке платежа' });
     }
 });
