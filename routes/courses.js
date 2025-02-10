@@ -228,33 +228,48 @@ router.post('/lessons/:lessonId/quiz-progress', auth, async (req, res) => {
 
 router.post('/:courseId/payment', auth, async (req, res) => {
     try {
+        const user = await User.findById(req.user.id);
         const course = await Course.findById(req.params.courseId);
+        
         if (!course) {
             return res.status(404).json({ message: 'Курс не найден' });
         }
 
-        // Находим студента в массиве enrolledStudents
-        const studentIndex = course.enrolledStudents.findIndex(
-            enrollment => enrollment.student && enrollment.student.toString() === req.user.id
+        // Проверяем, есть ли уже этот курс у пользователя
+        const existingEnrollment = user.enrolledCourses.find(
+            enrollment => enrollment.course.toString() === req.params.courseId
         );
 
-        if (studentIndex === -1) {
-            // Если студент еще не записан на курс
-            course.enrolledStudents.push({
-                student: req.user.id,
-                paymentStatus: 'completed',
-                enrolledAt: new Date()
-            });
+        if (existingEnrollment) {
+            existingEnrollment.paymentStatus = 'completed';
         } else {
-            // Обновляем статус оплаты для существующей записи
-            course.enrolledStudents[studentIndex].paymentStatus = 'completed';
+            user.enrolledCourses.push({
+                course: req.params.courseId,
+                paymentStatus: 'completed'
+            });
         }
 
-        await course.save();
+        await user.save();
         res.json({ message: 'Оплата прошла успешно' });
     } catch (err) {
         console.error('Ошибка при обработке платежа:', err);
         res.status(500).json({ message: 'Ошибка при обработке платежа' });
+    }
+});
+
+router.get('/:courseId/payment-status', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        const enrollment = user.enrolledCourses.find(
+            e => e.course.toString() === req.params.courseId
+        );
+        
+        res.json({
+            isPaid: enrollment?.paymentStatus === 'completed',
+            status: enrollment?.paymentStatus || 'not_enrolled'
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Ошибка при проверке статуса оплаты' });
     }
 });
 
