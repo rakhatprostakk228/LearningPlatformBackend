@@ -228,38 +228,6 @@ function calculateQuizScore(questions, answers) {
     return (correctAnswers / questions.length) * 100;
 }
 
-router.post('/pay/:courseId', auth, async (req, res) => {
-    try {
-      const user = await User.findById(req.user.id);
-      const courseEnrollment = user.enrolledCourses.find(
-        enrollment => enrollment.course.toString() === req.params.courseId
-      );
-      
-      if (courseEnrollment) {
-        courseEnrollment.paymentStatus = 'completed';
-        await user.save();
-        res.json({ success: true });
-      } else {
-        res.status(404).json({ message: 'Course enrollment not found' });
-      }
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
-  
-  // Проверка статуса оплаты
-  router.get('/payment-status/:courseId', auth, async (req, res) => {
-    try {
-      const user = await User.findById(req.user.id);
-      const courseEnrollment = user.enrolledCourses.find(
-        enrollment => enrollment.course.toString() === req.params.courseId
-      );
-      res.json({ paymentStatus: courseEnrollment?.paymentStatus || 'not_enrolled' });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  });
-
 const Course = mongoose.model('Course', courseSchema);
 
 module.exports = Course;
