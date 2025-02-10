@@ -274,7 +274,6 @@ router.get('/:courseId/payment-status', auth, async (req, res) => {
 });
 
 // Submit final quiz answers
-// Добавьте этот маршрут в courses.js
 router.post('/lessons/:lessonId/submit-quiz', auth, async (req, res) => {
     try {
         console.log('Quiz submission received:', {
