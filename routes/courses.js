@@ -84,22 +84,27 @@ router.post('/enroll/:courseId', auth, async (req, res) => {
 // Unenroll from a course
 router.post('/:courseId/unenroll', auth, async (req, res) => {
     try {
+        // Обновляем Course
         const course = await Course.findById(req.params.courseId);
         if (!course) {
             return res.status(404).json({ message: 'Course not found' });
         }
 
-        const studentIndex = course.enrolledStudents.indexOf(req.user.id);
-        if (studentIndex === -1) {
-            return res.status(400).json({ message: 'Not enrolled in this course' });
-        }
+        // Обновляем User
+        const user = await User.findById(req.user.id);
+        user.enrolledCourses = user.enrolledCourses.filter(
+            enrollment => enrollment.course.toString() !== req.params.courseId
+        );
+        await user.save();
 
-        course.enrolledStudents.splice(studentIndex, 1);
+        // Обновляем Course
+        course.enrolledStudents = course.enrolledStudents.filter(
+            studentId => studentId.toString() !== req.user.id
+        );
         await course.save();
 
         res.json({ message: 'Successfully unenrolled from course' });
     } catch (err) {
-        console.error('Error unenrolling from course:', err);
         res.status(500).json({ message: err.message });
     }
 });
