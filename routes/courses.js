@@ -21,14 +21,24 @@ router.get('/', async (req, res) => {
 // Get enrolled courses (protected route)
 router.get('/my-courses', auth, async (req, res) => {
     try {
-        console.log('Fetching enrolled courses for user:', req.user.id);
+        const user = await User.findById(req.user.id);
         const courses = await Course.find({
-            enrolledStudents: req.user.id
+            '_id': { $in: user.enrolledCourses.map(e => e.course) }
         });
-        console.log(`Found ${courses.length} enrolled courses`);
-        res.json(courses);
+
+        // Добавляем статус оплаты к каждому курсу
+        const coursesWithPayment = courses.map(course => {
+            const enrollment = user.enrolledCourses.find(
+                e => e.course.toString() === course._id.toString()
+            );
+            return {
+                ...course.toObject(),
+                paymentStatus: enrollment?.paymentStatus || 'pending'
+            };
+        });
+
+        res.json(coursesWithPayment);
     } catch (err) {
-        console.error('Error fetching enrolled courses:', err);
         res.status(500).json({ message: err.message });
     }
 });
