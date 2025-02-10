@@ -305,7 +305,6 @@ router.post('/lessons/:lessonId/submit-quiz', auth, async (req, res) => {
 
         const score = Math.round((correctAnswers / totalQuestions) * 100);
 
-        // Сохраняем попытку
         if (!lesson.quiz.attempts) {
             lesson.quiz.attempts = [];
         }
